@@ -51,16 +51,13 @@ class GuildService
         $guilds = Guilds::with('users.rpgClass')->get();
         $players = $this->getAllPlayersNotInGuild();
 
-        // Passo 1: Garantir que cada guilda tenha as classes mínimas.
         $this->distributeClasses($guilds, $players);
 
-        // Passo 2: Balancear as guildas por XP.
         $this->distributeXP($guilds);
     }
 
     private function distributeClasses($guilds, $players)
     {
-        // Requisitos de classes para cada guilda
         $classRequirements = [
             'Clérigo' => 1,
             'Guerreiro' => 1,
@@ -73,11 +70,6 @@ class GuildService
                     return $player->rpgClass->name === $class;
                 })->take($min);
 
-                if ($neededPlayers->count() < $min) {
-                    \Log::warning("Guilda '{$guild->name}' não tem {$min} jogadores da classe {$class}. Jogadores restantes não atendem ao requisito.");
-                }
-
-                // Atribui os jogadores necessários à guilda
                 $guild->users()->attach($neededPlayers->pluck('id'));
                 $players = $players->diff($neededPlayers);
             }
@@ -86,34 +78,28 @@ class GuildService
 
     private function distributeXP($guilds)
     {
-        // Ordenar as guildas com base no XP total
-        $sortedGuilds = $guilds->sortBy('total_xp')->values(); // Mantém as guildas ordenadas por XP total
+        $sortedGuilds = $guilds->sortBy('total_xp')->values();
 
         while (true) {
             $minGuild = $sortedGuilds->first();
             $maxGuild = $sortedGuilds->last();
 
-            // Interrompe se a diferença de XP entre as guildas estiver equilibrada.
             if (($maxGuild->total_xp - $minGuild->total_xp) <= 10) {
                 break;
             }
 
-            // Move o jogador da guilda com mais XP para a guilda com menos XP
             $playerToMove = $maxGuild->users->sortByDesc('xp')->first();
 
             if (!$playerToMove) {
-                break; // Evita loop infinito caso não haja jogadores elegíveis
+                break;
             }
 
-            // Move o jogador da guilda com mais XP para a guilda com menos XP
             $maxGuild->users()->detach($playerToMove->id);
             $minGuild->users()->attach($playerToMove->id);
 
-            // Atualiza os valores de XP total das guildas
             $maxGuild->total_xp = $maxGuild->users->sum('xp');
             $minGuild->total_xp = $minGuild->users->sum('xp');
 
-            // Reordena as guildas para a próxima iteração
             $sortedGuilds = $guilds->sortBy('total_xp')->values();
         }
     }
@@ -131,7 +117,6 @@ class GuildService
         $guild->max_players = $maxPlayers;
         $guild->save();
 
-        // Rebalancear guilda se necessário
         if ($guild->users()->count() > $maxPlayers) {
             $this->balanceGuilds();
         }
