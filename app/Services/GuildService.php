@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\GuildFullException;
+use App\Exceptions\UserAlreadyInGuildException;
 use App\Models\Guilds;
 use App\Repositories\GuildRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class GuildService
 {
@@ -14,12 +17,12 @@ class GuildService
         $this->repository = $repository;
     }
 
-    public function getAllGuilds()
+    public function getAllGuilds(): LengthAwarePaginator
     {
         return $this->repository->getAllGuilds();
     }
 
-    public function show($guildId)
+    public function show(int $guildId): Guilds
     {
         return $this->repository->show($guildId);
     }
@@ -29,34 +32,38 @@ class GuildService
         return $this->repository->store($data);
     }
 
-    public function addUserToGuild(array $data, $guildId)
+    public function addUserToGuild(array $data, int $guildId)
     {
-        $guild = Guilds::findOrFail($guildId);
+        $guild = $this->repository->show($guildId);
 
-        if ($guild->users()->count() >= $guild->max_players) {
-            throw new \Exception('A guilda atingiu o número máximo de jogadores.', 400);
+        if ($this->isGuildFull($guild)) {
+            throw new GuildFullException('A guilda atingiu o número máximo de jogadores.');
+        }
+
+        if ($guild->users()->where('user_id', $data['user_id'])->exists()) {
+            throw new UserAlreadyInGuildException(); // Lança a exceção personalizada
         }
 
         $guild->users()->attach($data['user_id']);
 
-        if ($guild->users()->count() >= $guild->max_players) {
-            $this->balanceGuilds();
-        }
-
         return $guild;
+    }
+
+    private function isGuildFull(Guilds $guild): bool
+    {
+        return $guild->users()->count() >= $guild->max_players;
     }
 
     public function balanceGuilds()
     {
-        $guilds = Guilds::with('users.rpgClass')->get();
-        $players = $this->getAllPlayersNotInGuild();
+        $guilds = $this->repository->getGuildsWithUsers();
+        $players = $this->repository->getPlayersNotInGuild();
 
-        $this->distributeClasses($guilds, $players);
-
-        $this->distributeXP($guilds);
+        $this->distributeClassesAmongGuilds($guilds, $players);
+        $this->distributeExperiencePoints($guilds);
     }
 
-    private function distributeClasses($guilds, $players)
+    private function distributeClassesAmongGuilds($guilds, $players)
     {
         $classRequirements = [
             'Clérigo' => 1,
@@ -70,17 +77,45 @@ class GuildService
                     return $player->rpgClass->name === $class;
                 })->take($min);
 
-                $guild->users()->attach($neededPlayers->pluck('id'));
-                $players = $players->diff($neededPlayers);
+                foreach ($neededPlayers as $player) {
+                    if ($guild->users->contains($player->id)) {
+                        continue;
+                    }
+
+                    $guild->users()->attach($player->id);
+                    $players = $players->reject(function ($remainingPlayer) use ($player) {
+                        return $remainingPlayer->id === $player->id;
+                    });
+                }
             }
         }
     }
 
-    private function distributeXP($guilds)
+    private function distributeExperiencePoints($guilds)
     {
+        $maxExecutionTime = 5;
+        $startTime = microtime(true);
+
+        foreach ($guilds as $guild) {
+            $guild->total_xp = $guild->users->sum('xp');
+        }
+
         $sortedGuilds = $guilds->sortBy('total_xp')->values();
 
         while (true) {
+            $currentTime = microtime(true);
+            $elapsedTime = $currentTime - $startTime;
+
+            if ($elapsedTime > $maxExecutionTime) {
+                break;
+            }
+
+            foreach ($guilds as $guild) {
+                $guild->total_xp = $guild->users->sum('xp');
+            }
+
+            $sortedGuilds = $guilds->sortBy('total_xp')->values();
+
             $minGuild = $sortedGuilds->first();
             $maxGuild = $sortedGuilds->last();
 
@@ -94,33 +129,26 @@ class GuildService
                 break;
             }
 
+            if ($minGuild->users()->where('user_id', $playerToMove->id)->exists()) {
+                continue;
+            }
+
             $maxGuild->users()->detach($playerToMove->id);
             $minGuild->users()->attach($playerToMove->id);
 
             $maxGuild->total_xp = $maxGuild->users->sum('xp');
             $minGuild->total_xp = $minGuild->users->sum('xp');
-
-            $sortedGuilds = $guilds->sortBy('total_xp')->values();
         }
     }
 
-    private function getAllPlayersNotInGuild()
+    public function updateMaxPlayers(int $guildId, int $maxPlayers): Guilds
     {
-        return \App\Models\User::where('confirmed', true)
-            ->whereDoesntHave('guilds')
-            ->get();
-    }
-
-    public function updateMaxPlayers($guildId, $maxPlayers)
-    {
-        $guild = Guilds::findOrFail($guildId);
-        $guild->max_players = $maxPlayers;
-        $guild->save();
-
-        if ($guild->users()->count() > $maxPlayers) {
-            $this->balanceGuilds();
+        if (!$this->repository->show($guildId)) {
+            throw new GuildFullException('Guilda não encontrada.');
         }
 
-        return $guild;
+        $updatedData = ['max_players' => $maxPlayers];
+
+        return $this->repository->updateMaxPlayers($guildId, $updatedData);
     }
 }

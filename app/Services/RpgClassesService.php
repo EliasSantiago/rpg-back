@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\RpgClass;
 use App\Repositories\RpgClassesRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class RpgClassesService
 {
@@ -13,11 +15,12 @@ class RpgClassesService
     $this->repository = $repository;
   }
 
-  public function getAllClasses() {
+  public function getAllClasses(): LengthAwarePaginator
+  {
     return $this->repository->getAllClasses();
   }
 
-  public function store(array $data): object
+  public function store(array $data): ?RpgClass
   {
     return $this->repository->store($data);
   }

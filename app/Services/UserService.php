@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\UserRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class UserService
 {
@@ -14,18 +15,18 @@ class UserService
     $this->repository = $repository;
   }
 
-  public function index()
+  public function index(): LengthAwarePaginator
   {
     return $this->repository->index();
   }
 
-  public function update($data, $userId)
+  public function update($data, $userId): User
   {
     return $this->repository->update($data, $userId);
   }
 
-  public function confirmAll($data)
+  public function confirmAll($data): void
   {
-    return $this->repository->confirmAll($data);
+    $this->repository->confirmAll($data);
   }
 }

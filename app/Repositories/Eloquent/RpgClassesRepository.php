@@ -3,7 +3,9 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\RpgClass as Model;
+use App\Models\RpgClass;
 use App\Repositories\RpgClassesRepositoryInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class RpgClassesRepository implements RpgClassesRepositoryInterface
 {
@@ -14,12 +16,12 @@ class RpgClassesRepository implements RpgClassesRepositoryInterface
     $this->model = $model;
   }
 
-  public function getAllClasses()
+  public function getAllClasses(): LengthAwarePaginator
   {
     return $this->model->paginate(200);
   }
 
-  public function store(array $data): ?object
+  public function store(array $data): ?RpgClass
   {
     return $this->model->create($data);
   }

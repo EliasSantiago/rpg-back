@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description')->nullable();
-            $table->integer('max_players')->default(5);
+            $table->integer('max_players')->default(10);
             $table->unsignedBigInteger('leader_id')->nullable();
             $table->foreign('leader_id')->references('id')->on('users');
             $table->timestamps();

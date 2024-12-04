@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\GuildService;
 use Illuminate\Http\Request;
 use App\Helpers\SetsJsonResponse;
+use App\Http\Requests\AddUserToGuildRequest;
+use App\Http\Requests\CreateGuildRequest;
+use App\Http\Requests\UpdateMaxPlayersRequest;
 
 class GuildController extends Controller
 {
@@ -24,10 +27,11 @@ class GuildController extends Controller
             $guilds = $this->guildService->getAllGuilds();
             return $this->setJsonResponse($guilds, 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 
@@ -37,38 +41,32 @@ class GuildController extends Controller
             $guild = $this->guildService->show($guildId);
             return $this->setJsonResponse($guild, 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 
-    public function store(Request $request)
+    public function store(CreateGuildRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:guilds,name',
-            'description' => 'nullable|string|max:1000',
-            'max_players' => 'required|integer|min:1',
-            'leader_id' => 'required|exists:users,id',
-        ]);
-
         try {
+            $validated = $request->validated();
             $guild = $this->guildService->store($validated);
             return $this->setJsonResponse($guild, 201);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 
-    public function addUserToGuild(Request $request, $guildId)
+    public function addUserToGuild(AddUserToGuildRequest $request, $guildId)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-        ]);
+        $validated = $request->validated();
 
         try {
             $guild = $this->guildService->addUserToGuild($validated, $guildId);
@@ -78,12 +76,14 @@ class GuildController extends Controller
                 'guild'   => $guild
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
+
 
     public function balance()
     {
@@ -94,30 +94,30 @@ class GuildController extends Controller
                 'message' => 'Guildas balanceadas com sucesso.',
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 
-    public function updateMaxPlayers(Request $request, $guildId)
+    public function updateMaxPlayers(UpdateMaxPlayersRequest $request, $guildId)
     {
-        $validated = $request->validate([
-            'max_players' => 'required|integer|min:1',
-        ]);
-
         try {
-            $guild = $this->guildService->updateMaxPlayers($guildId, $validated['max_players']);
+            $guild = $this->guildService->updateMaxPlayers($guildId, $request->validated()['max_players']);
+
             return $this->setJsonResponse([
                 'message' => 'Limite de jogadores atualizado com sucesso.',
                 'guild'   => $guild,
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
-                'error'   => true
-            ], $e->getCode() ?? 500);
+                'error'   => true,
+            ], $statusCode);
         }
     }
 }

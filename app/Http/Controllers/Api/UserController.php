@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\SetsJsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ConfirmedRequest;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
@@ -31,12 +32,10 @@ class UserController extends Controller
         }
     }
 
-    public function update(Request $request, $userId)
+    public function update(ConfirmedRequest $request, $userId)
     {
         try {
-            $validated = $request->validate([
-                'confirmed' => 'required|boolean'
-            ]);
+            $validated = $request->validated();
 
             $user = $this->service->update($validated, $userId);
             return $this->setJsonResponse([
@@ -50,12 +49,10 @@ class UserController extends Controller
         }
     }
 
-    public function confirmAll(Request $request)
+    public function confirmAll(ConfirmedRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'confirmed' => 'required|boolean'
-            ]);
+            $validated = $request->validated();
 
             $this->service->confirmAll($validated);
             return $this->setJsonResponse([

@@ -3,7 +3,11 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Guilds as Model;
+use App\Models\Guilds;
+use App\Models\User;
 use App\Repositories\GuildRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class GuildRepository implements GuildRepositoryInterface
 {
@@ -14,12 +18,12 @@ class GuildRepository implements GuildRepositoryInterface
     $this->model = $model;
   }
 
-  public function show($guildId)
+  public function show(int $guildId): Guilds
   {
     return $this->model::findOrFail($guildId);
   }
 
-  public function getAllGuilds()
+  public function getAllGuilds(): LengthAwarePaginator
   {
     return $this->model::with(['users.rpgClass:id,name'])->paginate(200);
   }
@@ -27,5 +31,22 @@ class GuildRepository implements GuildRepositoryInterface
   public function store(array $data): ?object
   {
     return $this->model->create($data);
+  }
+
+  public function updateMaxPlayers(int $guildId, array $updatedData): Guilds
+  {
+    $guild = Guilds::findOrFail($guildId);
+    $guild->update($updatedData);
+    return $guild;
+  }
+
+  public function getGuildsWithUsers(): Collection
+  {
+    return Guilds::with('users.rpgClass')->get();
+  }
+
+  public function getPlayersNotInGuild(): Collection
+  {
+    return User::whereDoesntHave('guilds')->get();
   }
 }

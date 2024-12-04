@@ -29,10 +29,11 @@ class AuthController extends Controller
 
             return $this->setJsonResponse($user, 201);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
@@ -41,29 +42,32 @@ class AuthController extends Controller
         try {
             $data = $request->validated();
             $user = $this->service->login($data);
-            return $this->setJsonResponse($user);
+            return $this->setJsonResponse($user, 200);
         } catch (AuthenticationException $e) {
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
             ], 401);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
+    
 
     public function information()
     {
         try {
             return $this->setJsonResponse($this->service->information());
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 }

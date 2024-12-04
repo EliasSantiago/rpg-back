@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\RpgClassesService;
 use Illuminate\Http\Request;
 use App\Helpers\SetsJsonResponse;
+use App\Http\Requests\StoreRpgClassRequest;
 
 class RpgClassesController extends Controller
 {
@@ -24,27 +25,26 @@ class RpgClassesController extends Controller
             $classes = $this->rpgClassService->getAllClasses();
             return $this->setJsonResponse($classes, 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreRpgClassRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:rpg_classes,name',
-        ]);
-
         try {
+            $validated = $request->validated();
             $rpgClass = $this->rpgClassService->store($validated);
             return $this->setJsonResponse($rpgClass, 201);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
                 'message' => $e->getMessage(),
                 'error'   => true
-            ], $e->getCode() ?? 500);
+            ], $statusCode);
         }
     }
 }
