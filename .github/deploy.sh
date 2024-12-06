@@ -5,7 +5,7 @@ echo "Deployment started ..."
 
 (php artisan down) || true
 
-git pull origin develop
+git pull origin main
 
 composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
