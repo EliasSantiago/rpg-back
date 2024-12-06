@@ -26,5 +26,11 @@ jobs:
         port: "22"
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Navegar até o diretório do projeto
           cd /www/wwwroot/rpg-back
-          ./.github/workflows/deploy.sh
+
+          # Puxar as últimas atualizações do repositório
+          git pull origin main
+
+          # Se estiver usando Composer, instale as dependências com --no-interaction
+          composer install --no-dev --optimize-autoloader --no-interaction
