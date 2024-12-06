@@ -25,4 +25,15 @@ jobs:
         username: ${{ secrets.REMOTE_USER_KEY }}
         port: "22"
         key: ${{ secrets.EC2_SSH_KEY }}
-        script: "cd /www/wwwroot/rpg-back && ./.github/workflows/deploy.sh"
+        script: |
+          # Navegar até o diretório do projeto
+          cd /www/wwwroot/rpg-back
+
+          # Puxar as últimas atualizações do repositório
+          git pull origin main
+
+          # Se estiver usando Composer, instale as dependências
+          composer install --no-dev --optimize-autoloader
+
+          # Reiniciar os processos com pm2
+          pm2 restart all
