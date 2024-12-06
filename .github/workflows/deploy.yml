@@ -26,20 +26,5 @@ jobs:
         port: "22"
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          set -e  # Termina em caso de erro
-
           cd /www/wwwroot/rpg-back
-
-          if ! command -v composer &> /dev/null
-          then
-            echo "Composer não está instalado. Abortando."
-            exit 1
-          fi
-
-          echo "Puxando atualizações..."
-          git pull origin main
-
-          echo "Instalando dependências..."
-          composer install --no-dev --optimize-autoloader --no-interaction
-
-          echo "Deploy concluído com sucesso!"
+          ./deploy.sh
