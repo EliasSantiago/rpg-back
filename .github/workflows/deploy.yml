@@ -19,7 +19,7 @@ jobs:
       run: chmod +x ./.github/workflows/deploy.sh
 
     - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.4
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.REMOTE_HOST_KEY }}
         username: ${{ secrets.REMOTE_USER_KEY }}
