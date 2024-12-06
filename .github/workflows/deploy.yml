@@ -27,4 +27,4 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd /www/wwwroot/rpg-back
-          ./deploy.sh
+          ./.github/workflows/deploy.sh
