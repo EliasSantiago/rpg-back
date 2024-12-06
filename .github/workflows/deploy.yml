@@ -34,9 +34,3 @@ jobs:
 
           # Se estiver usando Composer, instale as dependências com --no-interaction
           composer install --no-dev --optimize-autoloader --no-interaction
-
-          # Instalar pm2 globalmente, caso não esteja instalado
-          npm install -g pm2
-
-          # Reiniciar os processos com pm2
-          pm2 restart all
