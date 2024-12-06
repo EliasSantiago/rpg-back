@@ -25,8 +25,18 @@ class UserService
     return $this->repository->update($data, $userId);
   }
 
-  public function confirmAll($data): void
+  public function changeConfirmationAll($data): void
   {
-    $this->repository->confirmAll($data);
+    $this->repository->changeConfirmationAll($data);
+  }
+
+  public function show($userId): User
+  {
+    return $this->repository->show($userId);
+  }
+
+  public function delete($userId): void
+  {
+    $this->repository->delete($userId);
   }
 }

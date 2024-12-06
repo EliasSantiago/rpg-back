@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Helpers\SetsJsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ConfirmedRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
@@ -32,7 +33,7 @@ class UserController extends Controller
         }
     }
 
-    public function update(ConfirmedRequest $request, $userId)
+    public function update(UpdateUserRequest $request, $userId)
     {
         try {
             $validated = $request->validated();
@@ -49,16 +50,49 @@ class UserController extends Controller
         }
     }
 
-    public function confirmAll(ConfirmedRequest $request)
+    public function changeConfirmationAll(ConfirmedRequest $request)
     {
         try {
             $validated = $request->validated();
 
-            $this->service->confirmAll($validated);
+            $this->service->changeConfirmationAll($validated);
+            $message = $validated['confirmed']
+                ? 'Jogadores confirmados com sucesso.'
+                : 'Jogadores desconfirmados com sucesso.';
+
             return $this->setJsonResponse([
-                'message' => 'Jogadores confirmados com sucesso.',
+                'message' => $message,
             ], 200);
         } catch (\Exception $e) {
+            return $this->setJsonResponse([
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 500);
+        }
+    }
+
+    public function show($userId)
+    {
+        try {
+            $user = $this->service->show($userId);
+            return $this->setJsonResponse([
+                $user
+            ]);
+        } catch (\Exception $e) {
+            return $this->setJsonResponse([
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 500);
+        }
+    }
+
+    public function delete($userId)
+    {
+        try {
+            $this->service->delete($userId);
+            return $this->setJsonResponse([
+                'message' => 'Usuário deletado com sucesso'
+            ]);
+        } catch (\Exception $e) {
+            dd($e);
             return $this->setJsonResponse([
                 'message' => $e->getMessage()
             ], $e->getCode() ?: 500);

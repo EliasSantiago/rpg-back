@@ -19,8 +19,9 @@ Route::prefix('v1')->group(function () {
 
         Route::controller(UserController::class)->group(function () {
             Route::get('/users', [UserController::class, 'index']);
-            Route::patch('/users/{userId}', [UserController::class, 'update']);
-            Route::post('/users/confirm-all', [UserController::class, 'confirmAll']);
+            Route::put('/users/{userId}', [UserController::class, 'update']);
+            Route::delete('/users/{userId}', [UserController::class, 'delete']);
+            Route::post('/users/change-confirmation-all', [UserController::class, 'changeConfirmationAll']);
         });
 
         Route::controller(GuildController::class)->group(function () {
