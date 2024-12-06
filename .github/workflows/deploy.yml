@@ -32,8 +32,8 @@ jobs:
           # Puxar as últimas atualizações do repositório
           git pull origin main
 
-          # Se estiver usando Composer, instale as dependências
-          composer install --no-dev --optimize-autoloader
+          # Se estiver usando Composer, instale as dependências com --no-interaction
+          composer install --no-dev --optimize-autoloader --no-interaction
 
           # Reiniciar os processos com pm2
           pm2 restart all
