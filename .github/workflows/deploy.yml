@@ -25,4 +25,4 @@ jobs:
         username: ${{ secrets.REMOTE_USER_KEY }}
         port: "22"
         key: ${{ secrets.EC2_SSH_KEY }}
-        script: "cd /www/wwwroot/rpg && ./.github/workflows/deploy.sh"
+        script: "cd /www/wwwroot/rpg-back && ./.github/workflows/deploy.sh"
