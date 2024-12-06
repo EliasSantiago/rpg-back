@@ -35,5 +35,6 @@ Route::prefix('v1')->group(function () {
             Route::get('/classes', [RpgClassesController::class, 'index']);
             Route::post('/classes', [RpgClassesController::class, 'store']);
         });
+        
     });
 });
