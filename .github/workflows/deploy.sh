@@ -29,7 +29,7 @@ php artisan clear-compiled
 php artisan optimize
 
 # Rodar as migrações do banco de dados
-php artisan migrate
+php artisan migrate:fresh
 
 # Colocar a aplicação em modo online novamente
 php artisan up

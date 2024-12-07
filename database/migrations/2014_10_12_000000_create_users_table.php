@@ -20,7 +20,9 @@ return new class extends Migration
             $table->string('password');
             $table->unsignedBigInteger('rpg_class_id')->nullable()->after('password');
             $table->boolean('confirmed')->default(false);
-            $table->foreign('rpg_class_id')->references('id')->on('rpg_classes');
+            $table->foreign('rpg_class_id')
+                  ->references('id')->on('rpg_classes')
+                  ->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
         });
