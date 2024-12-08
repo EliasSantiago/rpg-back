@@ -38,10 +38,10 @@ WORKDIR /var/www
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Configure environment variables for Laravel
-ENV DB_CONNECTION=sqlite
-ENV DB_DATABASE=/var/www/database/database.sqlite
+#ENV DB_CONNECTION=sqlite
+#ENV DB_DATABASE=/var/www/database/database.sqlite
 
 # Create SQLite database directory and file within the project
-RUN mkdir -p /var/www/database && touch /var/www/database/database.sqlite
+#RUN mkdir -p /var/www/database && touch /var/www/database/database.sqlite
 
 USER $user

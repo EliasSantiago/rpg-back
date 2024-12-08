@@ -23,7 +23,7 @@ class UpdateUserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'xp' => 'required|integer|min:0',
             'rpg_class_id' => 'required|int|exists:rpg_classes,id',
-            'confirmed' => 'required|boolean',
+            'confirmed' => 'boolean',
         ];
     }
 }

@@ -30,6 +30,11 @@ class UserService
     $this->repository->changeConfirmationAll($data);
   }
 
+  public function changeConfirmation($data, $userId): void
+  {
+    $this->repository->changeConfirmation($data, $userId);
+  }
+
   public function show($userId): User
   {
     return $this->repository->show($userId);

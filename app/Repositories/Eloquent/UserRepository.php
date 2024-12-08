@@ -21,20 +21,15 @@ class UserRepository implements UserRepositoryInterface
     return $this->model->with(['rpgClass:id,name'])->orderBy('xp', 'desc')->paginate(200);
   }
 
-  public function show($userId): User
-  {
-    return $this->model->findOrFail($userId);
-  }
-
   public function delete($userId): void
   {
     $user = $this->model->findOrFail($userId);
-    dd($user->delete());
+    $user->delete();
   }
 
-  public function getUserById($userId): User
+  public function show($userId): User
   {
-    return $this->model->findOrFail($userId);
+    return $this->model->with(['rpgClass:id,name'])->findOrFail($userId);
   }
 
   public function update($data, $userId): User
@@ -48,5 +43,11 @@ class UserRepository implements UserRepositoryInterface
   {
       $confirmed = (bool) $data['confirmed'];
       $this->model->where('confirmed', '!=', $confirmed)->update(['confirmed' => $confirmed]);
+  }
+
+  public function changeConfirmation($data, $userId): void
+  {
+      $confirmed = (bool) $data['confirmed'];
+      $this->model->where('id', '=', $userId)->update(['confirmed' => $confirmed]);
   }
 }

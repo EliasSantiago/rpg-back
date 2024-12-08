@@ -19,6 +19,8 @@ return new class extends Migration
             $table->unsignedBigInteger('leader_id')->nullable();
             $table->foreign('leader_id')->references('id')->on('users');
             $table->timestamps();
+
+            $table->softDeletes();
         });
     }
 

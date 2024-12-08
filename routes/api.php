@@ -19,9 +19,11 @@ Route::prefix('v1')->group(function () {
 
         Route::controller(UserController::class)->group(function () {
             Route::get('/users', [UserController::class, 'index']);
+            Route::get('/users/{userId}', [UserController::class, 'show']);
             Route::put('/users/{userId}', [UserController::class, 'update']);
             Route::delete('/users/{userId}', [UserController::class, 'delete']);
             Route::post('/users/change-confirmation-all', [UserController::class, 'changeConfirmationAll']);
+            Route::patch('/users/change-confirmation/{userId}', [UserController::class, 'changeConfirmation']);
         });
 
         Route::controller(GuildController::class)->group(function () {
@@ -29,6 +31,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/guilds', [GuildController::class, 'store']);
             Route::get('/guilds/balance', [GuildController::class, 'balance']);
             Route::post('/guilds/{guildId}/add-user', [GuildController::class, 'addUserToGuild']);
+            Route::delete('/guilds/{guildId}/users/{userId}', [GuildController::class, 'removeUserFromGuild']);
         });
 
         Route::controller(RpgClassesController::class)->group(function () {

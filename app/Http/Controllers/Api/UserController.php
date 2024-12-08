@@ -70,13 +70,31 @@ class UserController extends Controller
         }
     }
 
+    public function changeConfirmation(ConfirmedRequest $request, $userId)
+    {
+        try {
+            $validated = $request->validated();
+
+            $this->service->changeConfirmation($validated, $userId);
+            $message = $validated['confirmed']
+                ? 'Jogador confirmado com sucesso.'
+                : 'Jogador desconfirmado com sucesso.';
+
+            return $this->setJsonResponse([
+                'message' => $message,
+            ], 200);
+        } catch (\Exception $e) {
+            return $this->setJsonResponse([
+                'message' => $e->getMessage()
+            ], $e->getCode() ?: 500);
+        }
+    }
+
     public function show($userId)
     {
         try {
             $user = $this->service->show($userId);
-            return $this->setJsonResponse([
-                $user
-            ]);
+            return $this->setJsonResponse($user);
         } catch (\Exception $e) {
             return $this->setJsonResponse([
                 'message' => $e->getMessage()

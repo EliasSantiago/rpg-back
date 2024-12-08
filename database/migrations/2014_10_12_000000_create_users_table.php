@@ -15,16 +15,20 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->float('xp')->default(0)->check('xp >= 1 AND xp <= 100');
+            $table->float('xp')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->unsignedBigInteger('rpg_class_id')->nullable()->after('password');
             $table->boolean('confirmed')->default(false);
+            $table->unsignedBigInteger('rpg_class_id')->nullable();
+
             $table->foreign('rpg_class_id')
                   ->references('id')->on('rpg_classes')
-                  ->onDelete('cascade');
+                  ->onDelete('set null');
+
             $table->rememberToken();
             $table->timestamps();
+
+            $table->softDeletes();
         });
     }
 

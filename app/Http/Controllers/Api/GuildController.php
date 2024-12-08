@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\UserNotInGuildException;
 use App\Http\Controllers\Controller;
 use App\Services\GuildService;
 use Illuminate\Http\Request;
 use App\Helpers\SetsJsonResponse;
 use App\Http\Requests\AddUserToGuildRequest;
 use App\Http\Requests\CreateGuildRequest;
+use App\Http\Requests\RemoveUserFromGuildRequest;
 use App\Http\Requests\UpdateMaxPlayersRequest;
+use Illuminate\Http\Response;
 
 class GuildController extends Controller
 {
@@ -84,6 +87,29 @@ class GuildController extends Controller
         }
     }
 
+    public function removeUserFromGuild(RemoveUserFromGuildRequest $request, $guildId, $userId)
+    {
+        $validated = $request->validated();
+    
+        try {
+            $guild = $this->guildService->removeUserFromGuild($userId, $guildId);
+    
+            return $this->setJsonResponse([
+                'message' => 'Usuário removido com sucesso.',
+                'guild'   => $guild
+            ], Response::HTTP_OK);
+        } catch (UserNotInGuildException $e) {
+            return $this->setJsonResponse([
+                'message' => $e->getMessage(),
+                'error'   => true
+            ], 404);
+        } catch (\Exception $e) {
+            return $this->setJsonResponse([
+                'message' => 'Erro inesperado: ' . $e->getMessage(),
+                'error'   => true
+            ], 500);
+        }
+    }
 
     public function balance()
     {

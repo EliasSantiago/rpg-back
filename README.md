@@ -39,10 +39,10 @@ API RPG.
 - docker-compose exec app php artisan migrate
 
 **Step 9: Seed the database**
-- Após rodar as migrations, gere os dados iniciais para as classes de RPG com o seguinte comando:
-- docker-compose exec app php artisan db:seed --class=RpgClassSeeder
-- docker-compose exec app php artisan db:seed --class=UserSeeder
-- docker-compose exec app php artisan db:seed --class=GuildSeeder
+- Após rodar as migrations, gere os dados iniciais para as classes de RPG rodando dentro do container os seguintes comandos:
+- php artisan db:seed --class=RpgClassSeeder
+- php artisan db:seed --class=UserSeeder
+- php artisan db:seed --class=GuildSeeder
 
 **Step 10: Generate/Update in the documentation**
 - docker-compose exec app php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider

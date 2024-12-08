@@ -45,8 +45,8 @@ class GuildRepository implements GuildRepositoryInterface
     return Guilds::with('users.rpgClass')->get();
   }
 
-  public function getPlayersNotInGuild(): Collection
+  public function getPlayersConfirmed(): Collection
   {
-    return User::whereDoesntHave('guilds')->get();
-  }
+      return User::where('confirmed', true)->get();
+  }  
 }

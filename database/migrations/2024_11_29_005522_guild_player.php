@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('guild_player');
+        Schema::dropIfExists('guild_user');
     }
 };

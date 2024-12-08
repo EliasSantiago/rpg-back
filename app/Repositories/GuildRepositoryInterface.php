@@ -12,6 +12,6 @@ interface GuildRepositoryInterface
     public function getAllGuilds(): LengthAwarePaginator;
     public function store(array $data): ?object;
     public function getGuildsWithUsers(): Collection;
-    public function getPlayersNotInGuild(): Collection;
+    public function getPlayersConfirmed(): Collection;
     public function updateMaxPlayers(int $guildId, array $updatedData): Guilds;
 }
