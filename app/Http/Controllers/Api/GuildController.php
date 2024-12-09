@@ -122,10 +122,10 @@ class GuildController extends Controller
     public function removeUserFromGuild(RemoveUserFromGuildRequest $request, $guildId, $userId)
     {
         $validated = $request->validated();
-    
+
         try {
             $guild = $this->guildService->removeUserFromGuild($userId, $guildId);
-    
+
             return $this->setJsonResponse([
                 'message' => 'Usuário removido com sucesso.',
                 'guild'   => $guild
@@ -146,10 +146,16 @@ class GuildController extends Controller
     public function balance()
     {
         try {
-            $this->guildService->balanceGuilds();
+            $res = $this->guildService->balanceGuilds();
+
+            if (isset($res) && count($res) > 0) {
+                $message = "Guildas balanceadas com sucesso. Algumas delas não atendem aos requisitos de classes, adicione mais jogadores e refaça o balanceamento.";
+            } else {
+                $message = 'Guildas balanceadas com sucesso.';
+            }
 
             return $this->setJsonResponse([
-                'message' => 'Guildas balanceadas com sucesso.',
+                'message' => $message
             ], 200);
         } catch (\Exception $e) {
             $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
@@ -159,6 +165,7 @@ class GuildController extends Controller
             ], $statusCode);
         }
     }
+
 
     public function updateMaxPlayers(UpdateMaxPlayersRequest $request, $guildId)
     {

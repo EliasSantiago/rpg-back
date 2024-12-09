@@ -90,6 +90,8 @@ class GuildService
 
         $this->distributeClassesAmongGuilds($guilds, $players, $classRequirements);
         $this->distributeExperiencePoints($guilds);
+
+        return $this->verifyGuildFormation();
     }
 
     private function distributeClassesAmongGuilds(Collection $guilds, Collection &$players, array $classRequirements)
@@ -208,6 +210,27 @@ class GuildService
     private function isGuildFull(Guilds $guild): bool
     {
         return $guild->users()->count() >= $guild->max_players;
+    }
+
+    public function verifyGuildFormation(): array
+    {
+        $guilds = $this->repository->getGuildsWithUsers();
+        $validGuilds = [];
+        $invalidGuilds = [];
+
+        foreach ($guilds as $guild) {
+            $cleric = $guild->users->contains(fn($user) => $user->rpgClass->name === 'Clérigo');
+            $warrior = $guild->users->contains(fn($user) => $user->rpgClass->name === 'Guerreiro');
+            $mageOrArcher = $guild->users->contains(fn($user) => in_array($user->rpgClass->name, ['Mago', 'Arqueiro']));
+
+            if ($cleric && $warrior && $mageOrArcher) {
+                $validGuilds[] = $guild;
+            } else {
+                $invalidGuilds[] = $guild->toArray();
+            }
+        }
+
+        return $invalidGuilds;
     }
 
     public function updateMaxPlayers(int $guildId, int $maxPlayers): Guilds
