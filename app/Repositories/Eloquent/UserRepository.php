@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Models\Guilds;
 use App\Models\User as Model;
 use App\Models\User;
 use App\Repositories\UserRepositoryInterface;
@@ -42,12 +43,20 @@ class UserRepository implements UserRepositoryInterface
   public function changeConfirmationAll($data): void
   {
       $confirmed = (bool) $data['confirmed'];
+  
       $this->model->where('confirmed', '!=', $confirmed)->update(['confirmed' => $confirmed]);
+      if (!$confirmed) {
+          $guilds = Guilds::all();
+  
+          foreach ($guilds as $guild) {
+              $guild->users()->detach();
+          }
+      }
   }
-
+  
   public function changeConfirmation($data, $userId): void
   {
-      $confirmed = (bool) $data['confirmed'];
-      $this->model->where('id', '=', $userId)->update(['confirmed' => $confirmed]);
+    $confirmed = (bool) $data['confirmed'];
+    $this->model->where('id', '=', $userId)->update(['confirmed' => $confirmed]);
   }
 }

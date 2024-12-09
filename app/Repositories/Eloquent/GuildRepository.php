@@ -33,6 +33,20 @@ class GuildRepository implements GuildRepositoryInterface
     return $this->model->create($data);
   }
 
+  public function update(array $data, $guildId): Guilds
+  {
+    $guild = $this->model->findOrFail($guildId);
+    $guild->update($data);
+    return $guild;
+  }
+
+  public function delete($guildId): void
+  {
+      $guild = $this->model->findOrFail($guildId);
+      $guild->users()->detach();
+      $guild->delete();
+  }
+
   public function updateMaxPlayers(int $guildId, array $updatedData): Guilds
   {
     $guild = Guilds::findOrFail($guildId);
@@ -47,6 +61,6 @@ class GuildRepository implements GuildRepositoryInterface
 
   public function getPlayersConfirmed(): Collection
   {
-      return User::where('confirmed', true)->get();
-  }  
+    return User::where('confirmed', true)->get();
+  }
 }

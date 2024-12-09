@@ -10,6 +10,7 @@ use App\Helpers\SetsJsonResponse;
 use App\Http\Requests\AddUserToGuildRequest;
 use App\Http\Requests\CreateGuildRequest;
 use App\Http\Requests\RemoveUserFromGuildRequest;
+use App\Http\Requests\UpdateGuildRequest;
 use App\Http\Requests\UpdateMaxPlayersRequest;
 use Illuminate\Http\Response;
 
@@ -58,6 +59,37 @@ class GuildController extends Controller
             $validated = $request->validated();
             $guild = $this->guildService->store($validated);
             return $this->setJsonResponse($guild, 201);
+        } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+            return $this->setJsonResponse([
+                'message' => $e->getMessage(),
+                'error'   => true
+            ], $statusCode);
+        }
+    }
+
+    public function update(UpdateGuildRequest $request, $guildId)
+    {
+        try {
+            $validated = $request->validated();
+            $guild = $this->guildService->update($validated, $guildId);
+            return $this->setJsonResponse($guild, 201);
+        } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+            return $this->setJsonResponse([
+                'message' => $e->getMessage(),
+                'error'   => true
+            ], $statusCode);
+        }
+    }
+
+    public function delete($guildId)
+    {
+        try {
+            $this->guildService->delete($guildId);
+            return $this->setJsonResponse([
+                'message' => 'Guilda deletada com sucesso.'
+            ], 201);
         } catch (\Exception $e) {
             $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([

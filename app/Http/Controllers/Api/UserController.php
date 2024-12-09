@@ -26,10 +26,10 @@ class UserController extends Controller
             $users = $this->service->index();
             return $this->setJsonResponse($users, 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
             return $this->setJsonResponse([
-                'message' => $e->getMessage(),
-                'error' => true
-            ], $e->getCode() ?: 500);
+                'message' => $e->getMessage()
+            ], $statusCode);
         }
     }
 
@@ -44,9 +44,11 @@ class UserController extends Controller
                 'user' => $user
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+
             return $this->setJsonResponse([
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
@@ -64,9 +66,11 @@ class UserController extends Controller
                 'message' => $message,
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+            
             return $this->setJsonResponse([
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
@@ -84,9 +88,11 @@ class UserController extends Controller
                 'message' => $message,
             ], 200);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+
             return $this->setJsonResponse([
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
@@ -96,9 +102,11 @@ class UserController extends Controller
             $user = $this->service->show($userId);
             return $this->setJsonResponse($user);
         } catch (\Exception $e) {
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+
             return $this->setJsonResponse([
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 
@@ -110,10 +118,11 @@ class UserController extends Controller
                 'message' => 'Usuário deletado com sucesso'
             ]);
         } catch (\Exception $e) {
-            dd($e);
+            $statusCode = is_int($e->getCode()) && $e->getCode() > 0 ? $e->getCode() : 500;
+
             return $this->setJsonResponse([
                 'message' => $e->getMessage()
-            ], $e->getCode() ?: 500);
+            ], $statusCode);
         }
     }
 }

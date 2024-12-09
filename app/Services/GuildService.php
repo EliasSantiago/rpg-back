@@ -35,6 +35,16 @@ class GuildService
         return $this->repository->store($data);
     }
 
+    public function update(array $data, $guildId): Guilds
+    {
+        return $this->repository->update($data, $guildId);
+    }
+
+    public function delete($guildId): void
+    {
+        $this->repository->delete($guildId);
+    }
+
     public function addUserToGuild(array $data, int $guildId)
     {
         $guild = $this->repository->show($guildId);
@@ -93,40 +103,49 @@ class GuildService
                     ->sortByDesc('xp')
                     ->take($min);
 
-                
                 foreach ($neededPlayers as $player) {
-                    $this->addPlayerToGuild($player, $guild);
-                    $players = $players->reject(fn($remainingPlayer) => $remainingPlayer->id === $player->id);
+                    if (!$this->isPlayerInAnyGuild($player) && !$this->isGuildFull($guild)) {
+                        $this->addPlayerToGuild($player, $guild);
+                        $players = $players->reject(fn($remainingPlayer) => $remainingPlayer->id === $player->id);
+                    }
                 }
             }
         }
 
-        // Após alocar os jogadores mínimos, preencher as guildas restantes
         foreach ($guilds as $guild) {
             while (!$this->isGuildFull($guild) && $players->isNotEmpty()) {
-                $player = $players->shift(); // Retira o primeiro jogador disponível
-                $this->addPlayerToGuild($player, $guild);
+                $player = $players->shift();
+                if (!$this->isPlayerInAnyGuild($player)) {
+                    $this->addPlayerToGuild($player, $guild);
+                }
             }
         }
     }
 
     private function distributeExperiencePoints(Collection $guilds)
     {
-        $maxExecutionTime = now()->addSeconds(10);
+        $maxExecutionTime = now()->addSeconds(2);
+        $totalXp = $guilds->sum(fn($guild) => $guild->users->sum('xp'));
+        $totalPlayers = $guilds->sum(fn($guild) => $guild->users->count());
+
+        if ($totalPlayers == 0) {
+            return;
+        }
+
+        $averageXpPerPlayer = $totalXp / $totalPlayers;
 
         while (true) {
             $guilds = $guilds->sortByDesc(fn($guild) => $guild->users->sum('xp'));
 
-            $maxGuild = $guilds->first();
-            $minGuild = $guilds->last();
-
-            $xpDifference = $maxGuild->users->sum('xp') - $minGuild->users->sum('xp');
-
+            $xpDifference = $guilds->first()->users->sum('xp') - $guilds->last()->users->sum('xp');
             if ($xpDifference <= 10 || now()->greaterThanOrEqualTo($maxExecutionTime)) {
                 break;
             }
 
-            $playerToMove = $this->findPlayerToBalance($maxGuild, $minGuild);
+            $maxGuild = $guilds->first();
+            $minGuild = $guilds->last();
+
+            $playerToMove = $this->findPlayerToBalanceByXp($maxGuild, $minGuild, $averageXpPerPlayer);
 
             if (!$playerToMove) {
                 break;
@@ -136,30 +155,47 @@ class GuildService
         }
     }
 
-    private function findPlayerToBalance(Guilds $maxGuild, Guilds $minGuild)
+
+    private function findPlayerToBalanceByXp(Guilds $maxGuild, Guilds $minGuild, float $averageXpPerPlayer)
     {
-        return $maxGuild->users
+        $playersToMove = $maxGuild->users
             ->sortByDesc('xp')
-            ->first(fn($player) => $this->canMovePlayer($player, $minGuild));
+            ->filter(fn($player) => abs($player->xp - $averageXpPerPlayer) > 10);
+
+        if ($playersToMove->isEmpty()) {
+            return null;
+        }
+
+        return $playersToMove->first();
     }
+
 
     private function movePlayerBetweenGuilds($player, Guilds $fromGuild, Guilds $toGuild)
     {
-        $fromGuild->users()->detach($player->id);
-        $toGuild->users()->attach($player->id);
+        if ($this->isPlayerInGuild($player, $fromGuild)) {
+            $fromGuild->users()->detach($player->id);
+        }
+
+        if (!$this->isGuildFull($toGuild) && !$this->isPlayerInGuild($player, $toGuild)) {
+            $toGuild->users()->attach($player->id);
+        }
     }
 
-    private function canMovePlayer($player, Guilds $guild): bool
+    private function isPlayerInAnyGuild($player): bool
     {
-        $playerClass = $player->rpgClass->name;
-        $classCount = $guild->users->where('rpgClass.name', $playerClass)->count();
+        return $player->guilds()->exists();
+    }
 
-        return $classCount === 0; // Move apenas se a guilda precisar da classe
+    private function isPlayerInGuild($player, Guilds $guild): bool
+    {
+        return $guild->users()->where('user_id', $player->id)->exists();
     }
 
     private function addPlayerToGuild($player, Guilds $guild)
     {
-        $guild->users()->attach($player->id);
+        if (!$this->isGuildFull($guild)) {
+            $guild->users()->attach($player->id);
+        }
     }
 
     private function validateGuildCapacity(Guilds $guild): void
@@ -176,10 +212,7 @@ class GuildService
 
     public function updateMaxPlayers(int $guildId, int $maxPlayers): Guilds
     {
-        $guild = $this->repository->show($guildId);
-
         $updatedData = ['max_players' => $maxPlayers];
-
         return $this->repository->updateMaxPlayers($guildId, $updatedData);
     }
 }

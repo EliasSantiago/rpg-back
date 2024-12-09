@@ -28,8 +28,11 @@ Route::prefix('v1')->group(function () {
 
         Route::controller(GuildController::class)->group(function () {
             Route::get('/guilds', [GuildController::class, 'index']);
+            Route::get('/guilds/{guildId}', [GuildController::class, 'show']);
+            Route::put('/guilds/{guildId}', [GuildController::class, 'update']);
+            Route::delete('/guilds/{guildId}', [GuildController::class, 'delete']);
             Route::post('/guilds', [GuildController::class, 'store']);
-            Route::get('/guilds/balance', [GuildController::class, 'balance']);
+            Route::post('/guilds/balance', [GuildController::class, 'balance']);
             Route::post('/guilds/{guildId}/add-user', [GuildController::class, 'addUserToGuild']);
             Route::delete('/guilds/{guildId}/users/{userId}', [GuildController::class, 'removeUserFromGuild']);
         });

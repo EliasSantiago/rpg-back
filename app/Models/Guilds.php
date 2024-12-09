@@ -20,5 +20,5 @@ class Guilds extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'guild_user', 'guild_id', 'user_id');
-    }    
+    }
 }
