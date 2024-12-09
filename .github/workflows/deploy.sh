@@ -14,6 +14,8 @@ else
   echo ".env encontrado. Nenhuma ação necessária."
 fi
 
+pwd
+
 # Puxar as últimas atualizações do repositório
 git pull origin main
 
