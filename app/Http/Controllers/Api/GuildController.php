@@ -166,7 +166,6 @@ class GuildController extends Controller
         }
     }
 
-
     public function updateMaxPlayers(UpdateMaxPlayersRequest $request, $guildId)
     {
         try {
